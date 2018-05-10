@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Whisky Collection</title>
+    <title>LOVE POEM Collection</title>
 
     <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
@@ -11,15 +11,15 @@
 <body>
 <div class="container" role="main">
     <div class="jumbotron">
-        <h1>My Whisky Collection</h1>
+        <h1>LOVE POEM Collection</h1>
 
-        <p>Just an example of simple CRUD application developed using Vert.x and Vertx Web.</p>
+        <p>Just a regret for you.</p>
     </div>
     <div class="page-header">
-        <h1>My Whiskies</h1>
+        <h1>LOVE LOVE</h1>
         <button class="pull-right btn btn-primary product-add" data-action="add" data-toggle="modal"
                 data-target="#productModal">
-            <span class="glyphicon glyphicon-plus"></span> Add a new bottle
+            <span class="glyphicon glyphicon-plus"></span> Add a new poem
         </button>
         <div class="row">
             <div class="col-md-12">
@@ -27,8 +27,10 @@
                     <thead>
                     <tr>
                         <th>#</th>
-                        <th>Name</th>
-                        <th>Origin</th>
+                        <th>Header</th>
+                        <th>Content</th>
+                        <th>Image</th>
+                        <th>UseDay</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -46,8 +48,8 @@
         initModal();
     });
 
-    function create(name, origin) {
-        $.post("/api/whiskies", JSON.stringify({name: name, origin: origin}), function () {
+    function create(header, content,useDay,imgUrl) {
+        $.post("/api/poems", JSON.stringify({header: header, content: content, useDay: useDay, imgUrl: imgUrl}), function () {
             load();
         }, "json");
     }
@@ -55,17 +57,17 @@
     function remove(id) {
         $.ajax({
             method: "DELETE",
-            url: "/api/whiskies/" + id
+            url: "/api/poems/" + id
         }).done(function () {
             load();
         });
     }
 
-    function update(id, name, origin) {
+    function update(id,header,content,useDay,imgUrl) {
         $.ajax({
             method: "PUT",
-            url: "/api/whiskies/" + id,
-            data: JSON.stringify({name: name, origin: origin})
+            url: "/api/poems/" + id,
+            data: JSON.stringify({header: header, content: content, useDay: useDay, imgUrl: imgUrl})
         }).done(function () {
             load();
         });
@@ -73,15 +75,18 @@
 
     function load() {
         $("#content").children().remove();
-        $.getJSON("/api/whiskies", function (data) {
+        $.getJSON("/api/poems", function (data) {
             $.each(data, function (key, val) {
-                $("<tr><td>" + val.id + "</td><td>" + val.name + "</td><td>" + val.origin + "</td>" +
+                $("<tr><td>" + val.id + "</td><td>" + val.header + "</td><td>" + val.content + "</td>" +
+                	    "</td><td>" + val.useDay + "</td>" +"</td><td>" + val.imgUrl + "</td>" +
                         "<td>" +
                         "<button data-action='edit' class='btn btn-primary btn-sm product-edit' " +
                         "data-toggle='modal' " +
                         "data-target='#productModal' " +
-                        "data-name='" + val.name + "' " +
-                        "data-origin='" + val.origin + "' " +
+                        "data-name='" + val.header + "' " +
+                        "data-content='" + val.content + "' " +
+                        "data-useDay='" + val.useDay + "' " +
+                        "data-imgUrl='" + val.imgUrl + "' " +
                         "data-id='" + val.id + "'>" +
                         "<span class='glyphicon glyphicon-pencil'></span>" +
                         "</button>" +
@@ -112,19 +117,25 @@
             productAction.unbind();
             var modal = $(this);
             if (action === "add") {
-                modal.find('.modal-title').text("Add a bottle");
-                modal.find('#product-name').val("");
-                modal.find('#product-origin').val("");
+                modal.find('.modal-title').text("Add a poem");
+                modal.find('#product-header').val("");
+                modal.find('#product-content').val("");
+                modal.find('#product-useDay').val("");
+                modal.find('#product-imgUrl').val("");
                 productAction.click(function () {
-                    create($("#product-name").val(), $("#product-origin").val());
+                    create($("#product-header").val(), $("#product-content").val() ,
+                    		$("#product-useDay").val(), $("#product-imgUrl").val());
                     $('#productModal').modal('toggle');
                 });
             } else {
-                modal.find('.modal-title').text("Edit a bottle");
-                modal.find('#product-name').val(button.data("name"));
-                modal.find('#product-origin').val(button.data("origin"));
+                modal.find('.modal-title').text("Edit a poem");
+                modal.find('#product-header').val(button.data("name"));
+                modal.find('#product-content').val(button.data("content"));
+                modal.find('#product-useDay').val(button.data("useday"));
+                modal.find('#product-imgUrl').val(button.data("imgurl"));
                 productAction.click(function () {
-                    update(id, $("#product-name").val(), $("#product-origin").val());
+                    update(id, $("#product-header").val(), $("#product-content").val(),
+                    		$("#product-useDay").val(), $("#product-imgUrl").val());
                     $('#productModal').modal('toggle');
                 });
             }
@@ -141,12 +152,20 @@
             <div class="modal-body">
                 <form>
                     <div class="form-group">
-                        <label for="product-name" class="control-label">Name:</label>
-                        <input type="text" class="form-control" id="product-name">
+                        <label for="product-header" class="control-label">标题:</label>
+                        <input type="text" class="form-control" id="product-header">
                     </div>
                     <div class="form-group">
-                        <label for="product-origin" class="control-label">Origin:</label>
-                        <input type="text" class="form-control" id="product-origin">
+                        <label for="product-content" class="control-label">内容:</label>
+                        <input type="text" class="form-control" id="product-content">
+                    </div>
+                     <div class="form-group">
+                        <label for="product-imgUrl" class="control-label">图片:</label>
+                        <input type="text" class="form-control" id="product-imgUrl">
+                    </div>
+                     <div class="form-group">
+                        <label for="product-useDay" class="control-label">使用日期:</label>
+                        <input type="text" class="form-control" id="product-useDay">
                     </div>
                 </form>
             </div>

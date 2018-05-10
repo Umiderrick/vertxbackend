@@ -22,8 +22,7 @@ import java.util.stream.Collectors;
  * implement them in JavaScript, Groovy, Ruby or Ceylon.
  */
 public class MyFirstVerticle extends AbstractVerticle {
-
-  public static final String COLLECTION = "whiskies";
+  public static final String COLLECTION_POEM = "poems";
   private MongoClient mongo;
 
   /**
@@ -38,11 +37,7 @@ public class MyFirstVerticle extends AbstractVerticle {
    */
   @Override
   public void start(Future<Void> fut) {
-
-    // Create a Mongo client
     mongo = MongoClient.createShared(vertx, config());
-
-
     createSomeData(
         (nothing) -> startWebApp(
             (http) -> completeStartup(http, fut)
@@ -63,12 +58,12 @@ public class MyFirstVerticle extends AbstractVerticle {
 
     router.route("/assets/*").handler(StaticHandler.create("assets"));
 
-    router.get("/api/whiskies").handler(this::getAll);
-    router.route("/api/whiskies*").handler(BodyHandler.create());
-    router.post("/api/whiskies").handler(this::addOne);
-    router.get("/api/whiskies/:id").handler(this::getOne);
-    router.put("/api/whiskies/:id").handler(this::updateOne);
-    router.delete("/api/whiskies/:id").handler(this::deleteOne);
+    router.get("/api/poems").handler(this::getAll);
+    router.route("/api/poems*").handler(BodyHandler.create());
+    router.post("/api/poems").handler(this::addOne);
+    router.get("/api/poems/:id").handler(this::getOne);
+    router.put("/api/poems/:id").handler(this::updateOne);
+    router.delete("/api/poems/:id").handler(this::deleteOne);
 
 
     // Create the HTTP server and pass the "accept" method to the request handler.
@@ -98,10 +93,11 @@ public class MyFirstVerticle extends AbstractVerticle {
   }
 
   private void addOne(RoutingContext routingContext) {
-    final Whisky whisky = Json.decodeValue(routingContext.getBodyAsString(),
-        Whisky.class);
+	System.out.println(routingContext.getBodyAsString());
+    final Poem whisky = Json.decodeValue(routingContext.getBodyAsString(),
+    		Poem.class);
 
-    mongo.insert(COLLECTION, whisky.toJson(), r ->
+    mongo.insert(COLLECTION_POEM, whisky.toJson(), r ->
         routingContext.response()
             .setStatusCode(201)
             .putHeader("content-type", "application/json; charset=utf-8")
@@ -113,13 +109,13 @@ public class MyFirstVerticle extends AbstractVerticle {
     if (id == null) {
       routingContext.response().setStatusCode(400).end();
     } else {
-      mongo.findOne(COLLECTION, new JsonObject().put("_id", id), null, ar -> {
+      mongo.findOne(COLLECTION_POEM, new JsonObject().put("_id", id), null, ar -> {
         if (ar.succeeded()) {
           if (ar.result() == null) {
             routingContext.response().setStatusCode(404).end();
             return;
           }
-          Whisky whisky = new Whisky(ar.result());
+          Poem whisky = new Poem(ar.result());
           routingContext.response()
               .setStatusCode(200)
               .putHeader("content-type", "application/json; charset=utf-8")
@@ -137,7 +133,7 @@ public class MyFirstVerticle extends AbstractVerticle {
     if (id == null || json == null) {
       routingContext.response().setStatusCode(400).end();
     } else {
-      mongo.update(COLLECTION,
+      mongo.update(COLLECTION_POEM,
           new JsonObject().put("_id", id), // Select a unique document
           // The update syntax: {$set, the json object containing the fields to update}
           new JsonObject()
@@ -148,7 +144,7 @@ public class MyFirstVerticle extends AbstractVerticle {
             } else {
               routingContext.response()
                   .putHeader("content-type", "application/json; charset=utf-8")
-                  .end(Json.encodePrettily(new Whisky(id, json.getString("name"), json.getString("origin"))));
+                  .end(Json.encodePrettily(new Poem(id, json.getString("header"), json.getString("content"), json.getString("useDay"), json.getString("imgUrl"), json.getString("attach"))));
             }
           });
     }
@@ -159,36 +155,33 @@ public class MyFirstVerticle extends AbstractVerticle {
     if (id == null) {
       routingContext.response().setStatusCode(400).end();
     } else {
-      mongo.removeOne(COLLECTION, new JsonObject().put("_id", id),
+      mongo.removeOne(COLLECTION_POEM, new JsonObject().put("_id", id),
           ar -> routingContext.response().setStatusCode(204).end());
     }
   }
 
   private void getAll(RoutingContext routingContext) {
-    mongo.find(COLLECTION, new JsonObject(), results -> {
+    mongo.find(COLLECTION_POEM, new JsonObject(), results -> {
       List<JsonObject> objects = results.result();
-      List<Whisky> whiskies = objects.stream().map(Whisky::new).collect(Collectors.toList());
+      List<Poem> poems = objects.stream().map(Poem::new).collect(Collectors.toList());
       routingContext.response()
           .putHeader("content-type", "application/json; charset=utf-8")
-          .end(Json.encodePrettily(whiskies));
+          .end(Json.encodePrettily(poems));
     });
   }
 
   private void createSomeData(Handler<AsyncResult<Void>> next, Future<Void> fut) {
-    Whisky bowmore = new Whisky("Bowmore 15 Years Laimrig", "Scotland, Islay");
-    Whisky talisker = new Whisky("Talisker 57° North", "Scotland, Island");
-    System.out.println(bowmore.toJson());
-
+	  Poem bowmore = new Poem("A", "B","C","D","E");
+	  Poem talisker = new Poem("1", "2","3","4","5");
     // Do we have data in the collection ?
-    mongo.count(COLLECTION, new JsonObject(), count -> {
+    mongo.count(COLLECTION_POEM, new JsonObject(), count -> {
       if (count.succeeded()) {
         if (count.result() == 0) {
-          // no whiskies, insert data
-          mongo.insert(COLLECTION, bowmore.toJson(), ar -> {
+          mongo.insert(COLLECTION_POEM, bowmore.toJson(), ar -> {
             if (ar.failed()) {
               fut.fail(ar.cause());
             } else {
-              mongo.insert(COLLECTION, talisker.toJson(), ar2 -> {
+              mongo.insert(COLLECTION_POEM, talisker.toJson(), ar2 -> {
                 if (ar2.failed()) {
                   fut.failed();
                 } else {

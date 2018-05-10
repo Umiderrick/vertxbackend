@@ -46,10 +46,10 @@ public class MyRestIT {
   @Test
   public void checkWeCanAddAndDeleteAProduct() {
     // Create a new bottle and retrieve the result (as a Whisky instance).
-    Whisky whisky = given()
-        .body("{\"name\":\"Jameson\", \"origin\":\"Ireland\"}").request().post("/api/whiskies").thenReturn().as(Whisky.class);
-    assertThat(whisky.getName()).isEqualToIgnoringCase("Jameson");
-    assertThat(whisky.getOrigin()).isEqualToIgnoringCase("Ireland");
+	  Poem whisky = given()
+        .body("{\"name\":\"Jameson\", \"origin\":\"Ireland\"}").request().post("/api/whiskies").thenReturn().as(Poem.class);
+    assertThat(whisky.getHeader()).isEqualToIgnoringCase("Jameson");
+    assertThat(whisky.getContent()).isEqualToIgnoringCase("Ireland");
     assertThat(whisky.getId()).isNotEmpty();
 
 

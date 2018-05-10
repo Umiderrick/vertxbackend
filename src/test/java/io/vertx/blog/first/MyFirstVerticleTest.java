@@ -127,7 +127,7 @@ public class MyFirstVerticleTest {
   @Test
   public void checkThatWeCanAdd(TestContext context) {
     Async async = context.async();
-    final String json = Json.encodePrettily(new Whisky("Jameson", "Ireland"));
+    final String json = Json.encodePrettily(new Poem("Jameson", "Ireland","1","2",""));
     vertx.createHttpClient().post(port, "localhost", "/api/whiskies")
         .putHeader("content-type", "application/json")
         .putHeader("content-length", Integer.toString(json.length()))
@@ -135,9 +135,9 @@ public class MyFirstVerticleTest {
           context.assertEquals(response.statusCode(), 201);
           context.assertTrue(response.headers().get("content-type").contains("application/json"));
           response.bodyHandler(body -> {
-            final Whisky whisky = Json.decodeValue(body.toString(), Whisky.class);
-            context.assertEquals(whisky.getName(), "Jameson");
-            context.assertEquals(whisky.getOrigin(), "Ireland");
+            final Poem whisky = Json.decodeValue(body.toString(), Poem.class);
+            context.assertEquals(whisky.getHeader(), "Jameson");
+            context.assertEquals(whisky.getContent(), "Ireland");
             context.assertNotNull(whisky.getId());
             async.complete();
           });
